@@ -15,8 +15,8 @@
   --bg-hover: #0F3460;
   
   --text-primary: #F3F4F6;
-  --text-secondary: #9CA3AF;
-  --text-muted: #6B7280;
+  --text-secondary: #D1D5DB;
+  --text-muted: #9CA3AF;
   
   --border-primary: #2D3748;
   --border-secondary: #4A5568;
@@ -994,7 +994,7 @@ body {
     <textarea class="copy-textarea" id="copy-textarea" placeholder="Escribe aquí el texto del copy, guion, o información importante del video..." oninput="updateCopyButton()"></textarea>
     <div class="copy-modal-actions">
       <button class="btn-cancel" onclick="closeCopyModal()">Cancelar</button>
-      <button class="btn-add" onclick="saveCopyText()">Guardar</button>
+      <button class="btn-add" onclick="this.textContent === 'Editar' ? enableEdit() : saveCopyText()">Guardar</button>
     </div>
   </div>
 </div>
@@ -1194,6 +1194,18 @@ function openCopyModal(videoId){
     const hasText = v.copyText && v.copyText.trim() !== '';
     saveBtn.textContent = hasText ? 'Editar' : 'Guardar';
     saveBtn.dataset.originalText = saveBtn.textContent; // Guardar estado original
+    
+    // Si hay texto, deshabilitar el textarea hasta que se haga clic en Editar
+    if (hasText) {
+      textarea.disabled = true;
+      textarea.style.background = 'rgba(102, 126, 234, 0.05)';
+      textarea.style.cursor = 'not-allowed';
+    } else {
+      textarea.disabled = false;
+      textarea.style.background = 'var(--bg-secondary)';
+      textarea.style.cursor = 'text';
+    }
+    
     document.getElementById('copy-modal').classList.add('show');
   }
 }
@@ -1215,13 +1227,39 @@ function saveCopyText(){
       const hasText = v.copyText && v.copyText.trim() !== '';
       saveBtn.textContent = hasText ? 'Editar' : 'Guardar';
       saveBtn.dataset.originalText = saveBtn.textContent;
+      
+      // Si hay texto, volver a deshabilitar el textarea
+      if (hasText) {
+        textarea.disabled = true;
+        textarea.style.background = 'rgba(102, 126, 234, 0.05)';
+        textarea.style.cursor = 'not-allowed';
+      }
     }
   }
   closeCopyModal();
 }
+function enableEdit(){
+  const textarea = document.getElementById('copy-textarea');
+  const saveBtn = document.querySelector('#copy-modal .btn-add');
+  
+  // Habilitar el textarea
+  textarea.disabled = false;
+  textarea.style.background = 'var(--bg-secondary)';
+  textarea.style.cursor = 'text';
+  textarea.focus();
+  
+  // Cambiar el botón a "Guardar"
+  saveBtn.textContent = 'Guardar';
+}
+
 function updateCopyButton(){
   const textarea = document.getElementById('copy-textarea');
   const saveBtn = document.querySelector('#copy-modal .btn-add');
+  
+  // Si el textarea está deshabilitado, no hacer nada
+  if (textarea.disabled) {
+    return;
+  }
   
   // Detectar si hay cambios respecto al texto original
   const hasChanges = textarea.value !== textarea.dataset.originalText;
