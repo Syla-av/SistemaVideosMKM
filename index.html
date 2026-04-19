@@ -220,7 +220,6 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: pulse 2s infinite;
 }
 
 .section-title {
@@ -326,7 +325,6 @@ body {
   color: var(--bg-primary);
   border-color: #8E9EAB;
   box-shadow: 0 2px 8px rgba(142, 158, 171, 0.3);
-  animation: pulse 2s infinite;
 }
 
 .stage-pill.pending {
@@ -418,7 +416,6 @@ body {
     rgba(255, 255, 255, 0.3),
     transparent
   );
-  animation: shimmer 2s infinite;
 }
 
 .detail {
@@ -477,7 +474,6 @@ body {
   background: var(--info-gradient);
   border-color: #8E9EAB;
   box-shadow: 0 4px 12px rgba(142, 158, 171, 0.3);
-  animation: pulse 2s infinite;
 }
 
 .pipe-stage.active::before {
@@ -893,20 +889,20 @@ body {
 
 <script>
 let videos = [
-  {id:1,title:'Video 1',group:'MKM',copyOk:true,recordingOk:true,driveLink:'https://drive.google.com/file/x',editor:'Equipo edición',deliveryDate:'20/04/2026',expanded:false,assignees:{copy:'Juan Pérez',recording:'María García',drive:'Juan Pérez',edit:'Ana López',delivery:'Carlos Ruiz'}},
-  {id:2,title:'Video 2',group:'MKM',copyOk:false,recordingOk:false,driveLink:'',editor:'',deliveryDate:'',expanded:false,assignees:{}},
-  {id:3,title:'Video 3',group:'MKM',copyOk:true,recordingOk:false,driveLink:'https://drive.google.com/file/y',editor:'',deliveryDate:'22/04/2026',expanded:false,assignees:{copy:'Juan Pérez',recording:'',drive:'Pedro Martín',edit:'',delivery:''}},
-  {id:4,title:'Video 4',group:'MKM',copyOk:false,recordingOk:true,driveLink:'',editor:'',deliveryDate:'',expanded:false,assignees:{copy:'',recording:'María García',drive:'',edit:'',delivery:''}},
-  {id:5,title:'Video 1',group:'Pauta',copyOk:true,recordingOk:true,driveLink:'https://drive.google.com/file/z',editor:'',deliveryDate:'',expanded:false,assignees:{copy:'Laura Sánchez',recording:'Miguel Ángel',drive:'Laura Sánchez',edit:'',delivery:''}},
-  {id:6,title:'Video 2',group:'Pauta',copyOk:false,recordingOk:false,driveLink:'',editor:'',deliveryDate:'',expanded:false,assignees:{}},
-  {id:7,title:'Video 3',group:'Pauta',copyOk:true,recordingOk:true,driveLink:'https://drive.google.com/file/w',editor:'',deliveryDate:'',expanded:false,assignees:{copy:'Laura Sánchez',recording:'Miguel Ángel',drive:'David Torres',edit:'',delivery:''}},
-  {id:8,title:'Video 4',group:'Pauta',copyOk:false,recordingOk:false,driveLink:'',editor:'',deliveryDate:'',expanded:false,assignees:{}},
+  {id:1,title:'Video 1',group:'MKM',copyOk:true,recordingOk:true,driveLink:'https://drive.google.com/file/x',editLink:'https://drive.google.com/file/editado-x',deliveryOk:true,deliveryDate:'20/04/2026',expanded:false,assignees:{copy:'Juan Pérez',recording:'María García',drive:'Juan Pérez',edit:'Ana López'}},
+  {id:2,title:'Video 2',group:'MKM',copyOk:false,recordingOk:false,driveLink:'',editLink:'',deliveryOk:false,deliveryDate:'',expanded:false,assignees:{}},
+  {id:3,title:'Video 3',group:'MKM',copyOk:true,recordingOk:false,driveLink:'https://drive.google.com/file/y',editLink:'',deliveryOk:false,deliveryDate:'22/04/2026',expanded:false,assignees:{copy:'Juan Pérez',recording:'',drive:'Pedro Martín',edit:''}},
+  {id:4,title:'Video 4',group:'MKM',copyOk:false,recordingOk:true,driveLink:'',editLink:'',deliveryOk:false,deliveryDate:'',expanded:false,assignees:{copy:'',recording:'María García',drive:'',edit:''}},
+  {id:5,title:'Video 1',group:'Pauta',copyOk:true,recordingOk:true,driveLink:'https://drive.google.com/file/z',editLink:'',deliveryOk:false,deliveryDate:'',expanded:false,assignees:{copy:'Laura Sánchez',recording:'Miguel Ángel',drive:'Laura Sánchez',edit:''}},
+  {id:6,title:'Video 2',group:'Pauta',copyOk:false,recordingOk:false,driveLink:'',editLink:'',deliveryOk:false,deliveryDate:'',expanded:false,assignees:{}},
+  {id:7,title:'Video 3',group:'Pauta',copyOk:true,recordingOk:true,driveLink:'https://drive.google.com/file/w',editLink:'https://drive.google.com/file/editado-w',deliveryOk:false,deliveryDate:'',expanded:false,assignees:{copy:'Laura Sánchez',recording:'Miguel Ángel',drive:'David Torres',edit:'Sofía Martínez'}},
+  {id:8,title:'Video 4',group:'Pauta',copyOk:false,recordingOk:false,driveLink:'',editLink:'',deliveryOk:false,deliveryDate:'',expanded:false,assignees:{}},
 ];
 let nextId=9;
 
 function getStatus(v){
-  if(v.deliveryDate&&v.driveLink&&v.editor) return 'entregado';
-  if(v.editor) return 'edicion';
+  if(v.deliveryOk&&v.driveLink&&v.editLink) return 'entregado';
+  if(v.editLink) return 'edicion';
   if(v.driveLink) return 'subido';
   return 'pendiente';
 }
@@ -925,11 +921,11 @@ function getPipeStages(v){
   let copyDone=v.copyOk;
   let recDone=v.recordingOk;
   let upDone=!!v.driveLink;
-  let editDone=!!v.editor&&!!v.driveLink;
-  let delivDone=!!v.deliveryDate&&editDone;
+  let editDone=!!v.editLink;
+  let delivDone=v.deliveryOk;
   return[
     {name:'Copy',state:stageState(copyDone,!copyDone),field:'copy'},
-    {name:'Grabación',state:stageState(recDone,!recDone),field:'rec'},
+    {name:'Grabación',state:stageState(recDone,copyDone&&!recDone),field:'rec'},
     {name:'Drive link',state:stageState(upDone,recDone&&!upDone),field:'drive'},
     {name:'Edición',state:stageState(editDone,upDone&&!editDone),field:'edit'},
     {name:'Entrega',state:stageState(delivDone,editDone&&!delivDone),field:'deliv'},
@@ -960,7 +956,7 @@ function render(){
           </div>`;
         }
         else if(s.field==='rec'){
-          inner=`<label class="pipe-check"><input type="checkbox" ${v.recordingOk?'checked':''} onchange="update(${v.id},'recordingOk',this.checked)"> Listo</label>
+          inner=`<label class="pipe-check"><input type="checkbox" ${v.recordingOk?'checked':''} ${!v.copyOk?'disabled':''} onchange="update(${v.id},'recordingOk',this.checked)"> Listo</label>
           <div class="stage-assignee">
             <span class="assignee-label">Responsable:</span>
             <input class="assignee-input" placeholder="Asignar miembro..." value="${v.assignees?.recording||''}" onchange="updateAssignee(${v.id},'recording',this.value)">
@@ -981,17 +977,23 @@ function render(){
           </div>`;
         }
         else if(s.field==='edit'){
-          inner=`<input class="pipe-input" placeholder="Nombre del editor..." value="${v.editor||''}" onchange="update(${v.id},'editor',this.value)">
+          inner=`<div class="drive-input-wrapper">
+            <input class="pipe-input" placeholder="Pegar enlace del video editado..." value="${v.editLink||''}" onchange="update(${v.id},'editLink',this.value)">
+            <button class="link-btn" onclick="openDriveLink('${v.editLink||''}')" ${!v.editLink?'disabled':''} title="Abrir video editado">
+              <svg viewBox="0 0 24 24">
+                <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
+              </svg>
+            </button>
+          </div>
           <div class="stage-assignee">
             <span class="assignee-label">Responsable:</span>
             <input class="assignee-input" placeholder="Asignar miembro..." value="${v.assignees?.edit||''}" onchange="updateAssignee(${v.id},'edit',this.value)">
           </div>`;
         }
         else if(s.field==='deliv'){
-          inner=`<input class="pipe-input" type="date" value="${v.deliveryDate?toInputDate(v.deliveryDate):''}" onchange="update(${v.id},'deliveryDate',toDisplayDate(this.value))">
-          <div class="stage-assignee">
-            <span class="assignee-label">Responsable:</span>
-            <input class="assignee-input" placeholder="Asignar miembro..." value="${v.assignees?.delivery||''}" onchange="updateAssignee(${v.id},'delivery',this.value)">
+          inner=`<div style="display:flex;flex-direction:column;gap:0.5rem">
+            <label class="pipe-check"><input type="checkbox" ${v.deliveryOk?'checked':''} onchange="update(${v.id},'deliveryOk',this.checked)"> Listo</label>
+            <input class="pipe-input" type="date" value="${v.deliveryDate?toInputDate(v.deliveryDate):''}" onchange="update(${v.id},'deliveryDate',toDisplayDate(this.value))">
           </div>`;
         }
         else{inner=`<span class="pipe-val">${s.state==='done'?'Listo':'Pendiente'}</span>`;}
@@ -1031,7 +1033,14 @@ function toggle(id){
 }
 function update(id,field,val){
   const v=videos.find(x=>x.id===id);
-  if(v){v[field]=val; render();}
+  if(v){
+    v[field]=val;
+    // Si se aprueba el copy, desmarcar automáticamente la grabación
+    if(field==='copyOk' && val===true){
+      v.recordingOk = false;
+    }
+    render();
+  }
 }
 function updateAssignee(id,stage,val){
   const v=videos.find(x=>x.id===id);
@@ -1052,7 +1061,7 @@ function addVideo(){
   const t=document.getElementById('new-title').value.trim();
   const g=document.getElementById('new-group').value.trim()||'General';
   if(!t) return;
-  videos.push({id:nextId++,title:t,group:g,copyOk:false,recordingOk:false,driveLink:'',editor:'',deliveryDate:'',expanded:false,assignees:{}});
+  videos.push({id:nextId++,title:t,group:g,copyOk:false,recordingOk:false,driveLink:'',editLink:'',deliveryOk:false,deliveryDate:'',expanded:false,assignees:{}});
   closeModal();render();
 }
 function toInputDate(d){
