@@ -1,188 +1,232 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Video Workflow System</title>
 
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    background: #f6f7fb;
-    margin: 0;
-    padding: 20px;
-  }
-
-  h1 {
-    font-size: 20px;
-    margin-bottom: 20px;
-  }
-
-  .container {
-    max-width: 1100px;
-    margin: auto;
-  }
-
-  .video-row {
-    background: white;
-    border-radius: 12px;
-    padding: 15px;
-    margin-bottom: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-  }
-
-  .steps {
-    display: flex;
-    gap: 10px;
-  }
-
-  .step {
-    padding: 6px 10px;
-    border-radius: 8px;
-    font-size: 12px;
-    background: #e5e7eb;
-  }
-
-  .done {
-    background: #10b981;
-    color: white;
-  }
-
-  .active {
-    background: #3b82f6;
-    color: white;
-  }
-
-  .detail {
-    display: none;
-    background: white;
-    padding: 20px;
-    margin-top: 10px;
-    border-radius: 12px;
-  }
-
-  input, select {
-    padding: 8px;
-    margin-top: 5px;
-    width: 100%;
-    margin-bottom: 10px;
-  }
-
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.app{padding:1.5rem;max-width:100%}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+.header h1{font-size:18px;font-weight:500;color:var(--color-text-primary)}
+.header p{font-size:13px;color:var(--color-text-secondary);margin-top:2px}
+.add-btn{background:var(--color-background-info);color:var(--color-text-info);border:none;border-radius:var(--border-radius-md);padding:7px 16px;font-size:13px;font-weight:500;cursor:pointer}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.5rem}
+.stat{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 14px}
+.stat-label{font-size:12px;color:var(--color-text-secondary);margin-bottom:4px}
+.stat-val{font-size:22px;font-weight:500;color:var(--color-text-primary)}
+.section-title{font-size:13px;font-weight:500;color:var(--color-text-secondary);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em}
+.video-list{display:flex;flex-direction:column;gap:6px;margin-bottom:1.5rem}
+.video-row{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:10px 14px;cursor:pointer;transition:border-color .15s}
+.video-row:hover{border-color:var(--color-border-secondary)}
+.video-row.expanded{border-color:var(--color-border-primary)}
+.row-main{display:flex;align-items:center;gap:10px}
+.row-title{font-size:14px;font-weight:500;color:var(--color-text-primary);min-width:90px}
+.stages{display:flex;align-items:center;gap:4px;flex:1}
+.stage-pill{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500;border:0.5px solid transparent}
+.stage-pill.done{background:#EAF3DE;color:#27500A;border-color:#C0DD97}
+.stage-pill.active{background:#E6F1FB;color:#0C447C;border-color:#B5D4F4}
+.stage-pill.pending{background:var(--color-background-secondary);color:var(--color-text-secondary);border-color:var(--color-border-tertiary)}
+.stage-sep{color:var(--color-border-secondary);font-size:10px}
+.row-status{font-size:12px;font-weight:500;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.status-entregado{background:#EAF3DE;color:#27500A}
+.status-edicion{background:#E6F1FB;color:#0C447C}
+.status-subido{background:#EEEDFE;color:#3C3489}
+.status-grabacion{background:#FAEEDA;color:#633806}
+.status-copy{background:#FAECE7;color:#4A1B0C}
+.status-pendiente{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+.progress-bar{width:60px;height:4px;background:var(--color-border-tertiary);border-radius:2px;overflow:hidden;margin-left:6px}
+.progress-fill{height:100%;border-radius:2px;background:#639922;transition:width .3s}
+.detail{display:none;margin-top:12px;padding-top:12px;border-top:0.5px solid var(--color-border-tertiary)}
+.video-row.expanded .detail{display:block}
+.pipeline{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px}
+.pipe-stage{border-radius:var(--border-radius-md);padding:10px 10px 12px;border:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary)}
+.pipe-stage.done{background:#EAF3DE;border-color:#C0DD97}
+.pipe-stage.active{background:#E6F1FB;border-color:#B5D4F4}
+.pipe-name{font-size:11px;font-weight:500;color:var(--color-text-secondary);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em}
+.pipe-stage.done .pipe-name{color:#27500A}
+.pipe-stage.active .pipe-name{color:#0C447C}
+.pipe-input{width:100%;font-size:12px;background:transparent;border:none;border-bottom:0.5px solid var(--color-border-secondary);padding:3px 0;color:var(--color-text-primary);outline:none}
+.pipe-input:focus{border-bottom-color:var(--color-border-primary)}
+.pipe-check{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--color-text-secondary);cursor:pointer}
+.pipe-check input{cursor:pointer;accent-color:#639922}
+.pipe-val{font-size:12px;color:var(--color-text-secondary)}
+.detail-actions{display:flex;gap:8px;justify-content:flex-end}
+.del-btn{font-size:12px;color:var(--color-text-secondary);background:none;border:none;cursor:pointer;padding:4px 8px}
+.del-btn:hover{color:var(--color-text-primary)}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);align-items:center;justify-content:center;z-index:100}
+.modal-bg.show{display:flex}
+.modal{background:var(--color-background-primary);border-radius:var(--border-radius-lg);padding:1.5rem;width:380px;border:0.5px solid var(--color-border-tertiary)}
+.modal h2{font-size:16px;font-weight:500;margin-bottom:1rem}
+.modal label{display:block;font-size:13px;color:var(--color-text-secondary);margin-bottom:4px;margin-top:12px}
+.modal input{width:100%;font-size:14px;padding:7px 10px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);color:var(--color-text-primary);background:var(--color-background-secondary)}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:1.25rem}
+.btn-cancel{background:none;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:7px 16px;font-size:13px;cursor:pointer;color:var(--color-text-secondary)}
+.btn-add{background:var(--color-background-info);color:var(--color-text-info);border:none;border-radius:var(--border-radius-md);padding:7px 16px;font-size:13px;font-weight:500;cursor:pointer}
+.empty{text-align:center;padding:2rem;color:var(--color-text-secondary);font-size:14px}
 </style>
-</head>
 
-<body>
+<div class="app">
+<h2 class="sr-only">Panel de gestión de producción de video con estados reactivos por etapa</h2>
 
-<div class="container">
-  <h1>🎬 Sistema de Producción de Videos</h1>
+<div class="header">
+  <div>
+    <h1>Producción de contenido</h1>
+    <p id="subtitle">Semana actual · estado reactivo por etapa</p>
+  </div>
+  <button class="add-btn" onclick="openModal()">+ Agregar video</button>
+</div>
 
-  <div id="videos"></div>
+<div class="stats">
+  <div class="stat"><div class="stat-label">Total videos</div><div class="stat-val" id="st-total">0</div></div>
+  <div class="stat"><div class="stat-label">Entregados</div><div class="stat-val" id="st-done">0</div></div>
+  <div class="stat"><div class="stat-label">En proceso</div><div class="stat-val" id="st-active">0</div></div>
+  <div class="stat"><div class="stat-label">Pendientes</div><div class="stat-val" id="st-pending">0</div></div>
+</div>
+
+<div id="groups"></div>
+
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <h2>Nuevo video</h2>
+    <label>Título del video</label>
+    <input id="new-title" placeholder="Ej: Video tutorial #1" />
+    <label>Grupo / proyecto</label>
+    <input id="new-group" placeholder="Ej: MKM, Pauta, Orgánico..." />
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-add" onclick="addVideo()">Agregar</button>
+    </div>
+  </div>
+</div>
 </div>
 
 <script>
-
 let videos = [
-  {
-    id: 1,
-    titulo: "Video 1",
-    copy_aprobado: true,
-    drive_url: "",
-    editor: "",
-    entrega: ""
-  },
-  {
-    id: 2,
-    titulo: "Video 2",
-    copy_aprobado: false,
-    drive_url: "",
-    editor: "",
-    entrega: ""
-  }
+  {id:1,title:'Video 1',group:'MKM',copyOk:true,driveLink:'https://drive.google.com/file/x',editor:'Equipo edición',deliveryDate:'20/04/2026',expanded:false},
+  {id:2,title:'Video 2',group:'MKM',copyOk:false,driveLink:'',editor:'',deliveryDate:'',expanded:false},
+  {id:3,title:'Video 3',group:'MKM',copyOk:true,driveLink:'https://drive.google.com/file/y',editor:'',deliveryDate:'22/04/2026',expanded:false},
+  {id:4,title:'Video 4',group:'MKM',copyOk:false,driveLink:'',editor:'',deliveryDate:'',expanded:false},
+  {id:5,title:'Video 1',group:'Pauta',copyOk:true,driveLink:'https://drive.google.com/file/z',editor:'',deliveryDate:'',expanded:false},
+  {id:6,title:'Video 2',group:'Pauta',copyOk:false,driveLink:'',editor:'',deliveryDate:'',expanded:false},
+  {id:7,title:'Video 3',group:'Pauta',copyOk:true,driveLink:'https://drive.google.com/file/w',editor:'',deliveryDate:'',expanded:false},
+  {id:8,title:'Video 4',group:'Pauta',copyOk:false,driveLink:'',editor:'',deliveryDate:'',expanded:false},
 ];
+let nextId=9;
 
-// 🔥 Lógica automática de estado
-function getEstado(video) {
-  if (video.entrega) return "entregado";
-  if (video.editor) return "edicion";
-  if (video.drive_url) return "subido";
-  if (video.copy_aprobado) return "grabacion";
-  return "pendiente";
+function getStatus(v){
+  if(v.deliveryDate&&v.driveLink&&v.editor) return 'entregado';
+  if(v.editor) return 'edicion';
+  if(v.driveLink) return 'subido';
+  if(v.copyOk) return 'grabacion';
+  return 'pendiente';
+}
+function getStatusLabel(s){
+  return{entregado:'Entregado',edicion:'En edición',subido:'Subido',grabacion:'Grabación',pendiente:'Pendiente'}[s];
+}
+function getProgress(v){
+  let s=getStatus(v);
+  return{entregado:100,edicion:75,subido:55,grabacion:35,pendiente:10}[s];
+}
+function stageState(done,active){
+  if(done) return 'done'; if(active) return 'active'; return 'pending';
+}
+function getPipeStages(v){
+  let st=getStatus(v);
+  let copyDone=v.copyOk;
+  let recDone=v.copyOk;
+  let upDone=!!v.driveLink;
+  let editDone=!!v.editor&&!!v.driveLink;
+  let delivDone=!!v.deliveryDate&&editDone;
+  return[
+    {name:'Copy',state:stageState(copyDone,!copyDone),field:'copy'},
+    {name:'Grabación',state:stageState(recDone,copyDone&&!recDone),field:'rec'},
+    {name:'Drive link',state:stageState(upDone,recDone&&!upDone),field:'drive'},
+    {name:'Edición',state:stageState(editDone,upDone&&!editDone),field:'edit'},
+    {name:'Entrega',state:stageState(delivDone,editDone&&!delivDone),field:'deliv'},
+  ];
 }
 
-// 🔥 Render principal
-function render() {
-  const container = document.getElementById("videos");
-  container.innerHTML = "";
-
-  videos.forEach(video => {
-
-    const estado = getEstado(video);
-
-    const row = document.createElement("div");
-    row.className = "video-row";
-
-    row.innerHTML = `
-      <div>${video.titulo}</div>
-      <div class="steps">
-        ${step("Copy", video.copy_aprobado)}
-        ${step("Grabación", video.copy_aprobado)}
-        ${step("Drive", video.drive_url)}
-        ${step("Edición", video.editor)}
-        ${step("Entrega", video.entrega)}
-      </div>
-    `;
-
-    // Toggle detalle
-    row.onclick = () => {
-      detail.style.display = detail.style.display === "block" ? "none" : "block";
-    };
-
-    const detail = document.createElement("div");
-    detail.className = "detail";
-
-    detail.innerHTML = `
-      <h3>${video.titulo}</h3>
-
-      <label>Link Drive</label>
-      <input type="text" placeholder="Pega link..." 
-        value="${video.drive_url}" 
-        onchange="update(${video.id}, 'drive_url', this.value)" />
-
-      <label>Editor</label>
-      <select onchange="update(${video.id}, 'editor', this.value)">
-        <option value="">Seleccionar</option>
-        <option ${video.editor==="Melissa"?"selected":""}>Melissa</option>
-        <option ${video.editor==="Equipo"?"selected":""}>Equipo</option>
-      </select>
-
-      <label>Fecha entrega</label>
-      <input type="date" 
-        value="${video.entrega}" 
-        onchange="update(${video.id}, 'entrega', this.value)" />
-    `;
-
-    container.appendChild(row);
-    container.appendChild(detail);
+function render(){
+  const groups={};
+  videos.forEach(v=>{
+    if(!groups[v.group]) groups[v.group]=[];
+    groups[v.group].push(v);
   });
+  let html='';
+  Object.entries(groups).forEach(([g,vids])=>{
+    html+=`<div class="section-title" style="margin-top:1rem">${g}</div><div class="video-list">`;
+    vids.forEach(v=>{
+      const st=getStatus(v);
+      const prog=getProgress(v);
+      const stages=getPipeStages(v);
+      const pills=stages.map(s=>`<span class="stage-pill ${s.state}">${s.name}</span>`).join(`<span class="stage-sep">›</span>`);
+      const pipeHTML=stages.map(s=>{
+        let inner='';
+        if(s.field==='copy'){inner=`<label class="pipe-check"><input type="checkbox" ${v.copyOk?'checked':''} onchange="update(${v.id},'copyOk',this.checked)"> Aprobado</label>`;}
+        else if(s.field==='drive'){inner=`<input class="pipe-input" placeholder="Pegar enlace Drive..." value="${v.driveLink||''}" onchange="update(${v.id},'driveLink',this.value)">`;}
+        else if(s.field==='edit'){inner=`<input class="pipe-input" placeholder="Nombre del editor..." value="${v.editor||''}" onchange="update(${v.id},'editor',this.value)">`;}
+        else if(s.field==='deliv'){inner=`<input class="pipe-input" type="date" value="${v.deliveryDate?toInputDate(v.deliveryDate):''}" onchange="update(${v.id},'deliveryDate',toDisplayDate(this.value))">`;}
+        else{inner=`<span class="pipe-val">${s.state==='done'?'Listo':'Depende del copy'}</span>`;}
+        return`<div class="pipe-stage ${s.state}"><div class="pipe-name">${s.name}</div>${inner}</div>`;
+      }).join('');
+      html+=`<div class="video-row${v.expanded?' expanded':''}" id="row-${v.id}">
+        <div class="row-main" onclick="toggle(${v.id})">
+          <span class="row-title">${v.title}</span>
+          <div class="stages">${pills}</div>
+          <span class="row-status status-${st}">${getStatusLabel(st)}</span>
+          <div class="progress-bar"><div class="progress-fill" style="width:${prog}%"></div></div>
+        </div>
+        <div class="detail">
+          <div class="pipeline">${pipeHTML}</div>
+          <div class="detail-actions"><button class="del-btn" onclick="deleteVideo(${v.id},event)">Eliminar</button></div>
+        </div>
+      </div>`;
+    });
+    html+='</div>';
+  });
+  if(!videos.length) html='<div class="empty">No hay videos. Agrega uno para comenzar.</div>';
+  document.getElementById('groups').innerHTML=html;
+  const total=videos.length;
+  const done=videos.filter(v=>getStatus(v)==='entregado').length;
+  const active=videos.filter(v=>['edicion','subido','grabacion'].includes(getStatus(v))).length;
+  const pend=videos.filter(v=>getStatus(v)==='pendiente').length;
+  document.getElementById('st-total').textContent=total;
+  document.getElementById('st-done').textContent=done;
+  document.getElementById('st-active').textContent=active;
+  document.getElementById('st-pending').textContent=pend;
 }
 
-function step(name, condition) {
-  return `<div class="step ${condition ? 'done' : ''}">${name}</div>`;
-}
-
-// 🔥 Actualización automática
-function update(id, field, value) {
-  const video = videos.find(v => v.id === id);
-  video[field] = value;
+function toggle(id){
+  const v=videos.find(x=>x.id===id);
+  if(v) v.expanded=!v.expanded;
   render();
 }
-
+function update(id,field,val){
+  const v=videos.find(x=>x.id===id);
+  if(v){v[field]=val; render();}
+}
+function deleteVideo(id,e){
+  e.stopPropagation();
+  videos=videos.filter(x=>x.id!==id);
+  render();
+}
+function openModal(){document.getElementById('modal').classList.add('show');}
+function closeModal(){document.getElementById('modal').classList.remove('show');document.getElementById('new-title').value='';document.getElementById('new-group').value='';}
+function addVideo(){
+  const t=document.getElementById('new-title').value.trim();
+  const g=document.getElementById('new-group').value.trim()||'General';
+  if(!t) return;
+  videos.push({id:nextId++,title:t,group:g,copyOk:false,driveLink:'',editor:'',deliveryDate:'',expanded:false});
+  closeModal();render();
+}
+function toInputDate(d){
+  if(!d) return '';
+  const p=d.split('/');
+  if(p.length===3) return`${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
+  return d;
+}
+function toDisplayDate(d){
+  if(!d) return '';
+  const p=d.split('-');
+  if(p.length===3) return`${p[2]}/${p[1]}/${p[0]}`;
+  return d;
+}
 render();
-
 </script>
-
-</body>
-</html>
