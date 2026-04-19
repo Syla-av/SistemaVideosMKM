@@ -329,7 +329,7 @@ body {
 
 .stage-pill.pending {
   background: var(--bg-secondary);
-  color: var(--text-muted);
+  color: var(--text-secondary);
   border-color: var(--border-secondary);
 }
 
@@ -380,7 +380,7 @@ body {
 
 .status-pendiente {
   background: var(--bg-secondary);
-  color: var(--text-muted);
+  color: var(--text-secondary);
   border: 1px solid var(--border-secondary);
 }
 
@@ -1187,6 +1187,9 @@ function openCopyModal(videoId){
   const v = videos.find(x=>x.id===videoId);
   if(v){
     document.getElementById('copy-textarea').value = v.copyText || '';
+    const saveBtn = document.querySelector('#copy-modal .btn-add');
+    const hasText = v.copyText && v.copyText.trim() !== '';
+    saveBtn.textContent = hasText ? 'Editar' : 'Guardar';
     document.getElementById('copy-modal').classList.add('show');
   }
 }
@@ -1203,6 +1206,12 @@ function saveCopyText(){
     }
   }
   closeCopyModal();
+}
+function updateCopyButton(){
+  const textarea = document.getElementById('copy-textarea');
+  const saveBtn = document.querySelector('#copy-modal .btn-add');
+  const hasText = textarea.value.trim() !== '';
+  saveBtn.textContent = hasText ? 'Editar' : 'Guardar';
 }
 render();
 </script>
