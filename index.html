@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Video Workflow System</title>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f6f7fb;
+    margin: 0;
+    padding: 20px;
+  }
+
+  h1 {
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: auto;
+  }
+
+  .video-row {
+    background: white;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  .steps {
+    display: flex;
+    gap: 10px;
+  }
+
+  .step {
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    background: #e5e7eb;
+  }
+
+  .done {
+    background: #10b981;
+    color: white;
+  }
+
+  .active {
+    background: #3b82f6;
+    color: white;
+  }
+
+  .detail {
+    display: none;
+    background: white;
+    padding: 20px;
+    margin-top: 10px;
+    border-radius: 12px;
+  }
+
+  input, select {
+    padding: 8px;
+    margin-top: 5px;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>🎬 Sistema de Producción de Videos</h1>
+
+  <div id="videos"></div>
+</div>
+
+<script>
+
+let videos = [
+  {
+    id: 1,
+    titulo: "Video 1",
+    copy_aprobado: true,
+    drive_url: "",
+    editor: "",
+    entrega: ""
+  },
+  {
+    id: 2,
+    titulo: "Video 2",
+    copy_aprobado: false,
+    drive_url: "",
+    editor: "",
+    entrega: ""
+  }
+];
+
+// 🔥 Lógica automática de estado
+function getEstado(video) {
+  if (video.entrega) return "entregado";
+  if (video.editor) return "edicion";
+  if (video.drive_url) return "subido";
+  if (video.copy_aprobado) return "grabacion";
+  return "pendiente";
+}
+
+// 🔥 Render principal
+function render() {
+  const container = document.getElementById("videos");
+  container.innerHTML = "";
+
+  videos.forEach(video => {
+
+    const estado = getEstado(video);
+
+    const row = document.createElement("div");
+    row.className = "video-row";
+
+    row.innerHTML = `
+      <div>${video.titulo}</div>
+      <div class="steps">
+        ${step("Copy", video.copy_aprobado)}
+        ${step("Grabación", video.copy_aprobado)}
+        ${step("Drive", video.drive_url)}
+        ${step("Edición", video.editor)}
+        ${step("Entrega", video.entrega)}
+      </div>
+    `;
+
+    // Toggle detalle
+    row.onclick = () => {
+      detail.style.display = detail.style.display === "block" ? "none" : "block";
+    };
+
+    const detail = document.createElement("div");
+    detail.className = "detail";
+
+    detail.innerHTML = `
+      <h3>${video.titulo}</h3>
+
+      <label>Link Drive</label>
+      <input type="text" placeholder="Pega link..." 
+        value="${video.drive_url}" 
+        onchange="update(${video.id}, 'drive_url', this.value)" />
+
+      <label>Editor</label>
+      <select onchange="update(${video.id}, 'editor', this.value)">
+        <option value="">Seleccionar</option>
+        <option ${video.editor==="Melissa"?"selected":""}>Melissa</option>
+        <option ${video.editor==="Equipo"?"selected":""}>Equipo</option>
+      </select>
+
+      <label>Fecha entrega</label>
+      <input type="date" 
+        value="${video.entrega}" 
+        onchange="update(${video.id}, 'entrega', this.value)" />
+    `;
+
+    container.appendChild(row);
+    container.appendChild(detail);
+  });
+}
+
+function step(name, condition) {
+  return `<div class="step ${condition ? 'done' : ''}">${name}</div>`;
+}
+
+// 🔥 Actualización automática
+function update(id, field, value) {
+  const video = videos.find(v => v.id === id);
+  video[field] = value;
+  render();
+}
+
+render();
+
+</script>
+
+</body>
+</html>
