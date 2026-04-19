@@ -525,6 +525,125 @@ body {
   border-radius: var(--radius-sm);
 }
 
+.drive-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.drive-input-wrapper .pipe-input {
+  flex: 1;
+}
+
+.link-btn {
+  background: var(--primary-gradient);
+  border: none;
+  border-radius: var(--radius-sm);
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
+}
+
+.link-btn:hover {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-md);
+}
+
+.link-btn:active {
+  transform: scale(0.95);
+}
+
+.link-btn svg {
+  width: 14px;
+  height: 14px;
+  fill: white;
+}
+
+.link-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.link-btn:disabled:hover {
+  transform: none;
+  box-shadow: var(--shadow-sm);
+}
+
+.stage-assignee {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  background: rgba(102, 126, 234, 0.1);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  min-height: 24px;
+}
+
+.assignee-label {
+  font-size: 0.625rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.assignee-name {
+  font-size: 0.75rem;
+  color: var(--border-accent);
+  font-weight: 600;
+  flex: 1;
+}
+
+.assignee-input {
+  font-size: 0.75rem;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-weight: 600;
+  width: 100%;
+  outline: none;
+  padding: 0;
+}
+
+.assignee-input::placeholder {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.assignee-input:focus {
+  background: rgba(102, 126, 234, 0.2);
+  border-radius: var(--radius-sm);
+  padding: 0.125rem 0.25rem;
+}
+
+.pipe-stage.done .stage-assignee {
+  background: rgba(19, 180, 151, 0.1);
+  border-color: rgba(19, 180, 151, 0.2);
+}
+
+.pipe-stage.done .assignee-name {
+  color: #13B497;
+}
+
+.pipe-stage.active .stage-assignee {
+  background: rgba(142, 158, 171, 0.1);
+  border-color: rgba(142, 158, 171, 0.2);
+}
+
+.pipe-stage.active .assignee-name {
+  color: #8E9EAB;
+}
+
 .pipe-check {
   display: flex;
   align-items: center;
@@ -774,14 +893,14 @@ body {
 
 <script>
 let videos = [
-  {id:1,title:'Video 1',group:'MKM',copyOk:true,driveLink:'https://drive.google.com/file/x',editor:'Equipo edición',deliveryDate:'20/04/2026',expanded:false},
-  {id:2,title:'Video 2',group:'MKM',copyOk:false,driveLink:'',editor:'',deliveryDate:'',expanded:false},
-  {id:3,title:'Video 3',group:'MKM',copyOk:true,driveLink:'https://drive.google.com/file/y',editor:'',deliveryDate:'22/04/2026',expanded:false},
-  {id:4,title:'Video 4',group:'MKM',copyOk:false,driveLink:'',editor:'',deliveryDate:'',expanded:false},
-  {id:5,title:'Video 1',group:'Pauta',copyOk:true,driveLink:'https://drive.google.com/file/z',editor:'',deliveryDate:'',expanded:false},
-  {id:6,title:'Video 2',group:'Pauta',copyOk:false,driveLink:'',editor:'',deliveryDate:'',expanded:false},
-  {id:7,title:'Video 3',group:'Pauta',copyOk:true,driveLink:'https://drive.google.com/file/w',editor:'',deliveryDate:'',expanded:false},
-  {id:8,title:'Video 4',group:'Pauta',copyOk:false,driveLink:'',editor:'',deliveryDate:'',expanded:false},
+  {id:1,title:'Video 1',group:'MKM',copyOk:true,recordingOk:true,driveLink:'https://drive.google.com/file/x',editor:'Equipo edición',deliveryDate:'20/04/2026',expanded:false,assignees:{copy:'Juan Pérez',recording:'María García',drive:'Juan Pérez',edit:'Ana López',delivery:'Carlos Ruiz'}},
+  {id:2,title:'Video 2',group:'MKM',copyOk:false,recordingOk:false,driveLink:'',editor:'',deliveryDate:'',expanded:false,assignees:{}},
+  {id:3,title:'Video 3',group:'MKM',copyOk:true,recordingOk:false,driveLink:'https://drive.google.com/file/y',editor:'',deliveryDate:'22/04/2026',expanded:false,assignees:{copy:'Juan Pérez',recording:'',drive:'Pedro Martín',edit:'',delivery:''}},
+  {id:4,title:'Video 4',group:'MKM',copyOk:false,recordingOk:true,driveLink:'',editor:'',deliveryDate:'',expanded:false,assignees:{copy:'',recording:'María García',drive:'',edit:'',delivery:''}},
+  {id:5,title:'Video 1',group:'Pauta',copyOk:true,recordingOk:true,driveLink:'https://drive.google.com/file/z',editor:'',deliveryDate:'',expanded:false,assignees:{copy:'Laura Sánchez',recording:'Miguel Ángel',drive:'Laura Sánchez',edit:'',delivery:''}},
+  {id:6,title:'Video 2',group:'Pauta',copyOk:false,recordingOk:false,driveLink:'',editor:'',deliveryDate:'',expanded:false,assignees:{}},
+  {id:7,title:'Video 3',group:'Pauta',copyOk:true,recordingOk:true,driveLink:'https://drive.google.com/file/w',editor:'',deliveryDate:'',expanded:false,assignees:{copy:'Laura Sánchez',recording:'Miguel Ángel',drive:'David Torres',edit:'',delivery:''}},
+  {id:8,title:'Video 4',group:'Pauta',copyOk:false,recordingOk:false,driveLink:'',editor:'',deliveryDate:'',expanded:false,assignees:{}},
 ];
 let nextId=9;
 
@@ -789,7 +908,6 @@ function getStatus(v){
   if(v.deliveryDate&&v.driveLink&&v.editor) return 'entregado';
   if(v.editor) return 'edicion';
   if(v.driveLink) return 'subido';
-  if(v.copyOk) return 'grabacion';
   return 'pendiente';
 }
 function getStatusLabel(s){
@@ -805,13 +923,13 @@ function stageState(done,active){
 function getPipeStages(v){
   let st=getStatus(v);
   let copyDone=v.copyOk;
-  let recDone=v.copyOk;
+  let recDone=v.recordingOk;
   let upDone=!!v.driveLink;
   let editDone=!!v.editor&&!!v.driveLink;
   let delivDone=!!v.deliveryDate&&editDone;
   return[
     {name:'Copy',state:stageState(copyDone,!copyDone),field:'copy'},
-    {name:'Grabación',state:stageState(recDone,copyDone&&!recDone),field:'rec'},
+    {name:'Grabación',state:stageState(recDone,!recDone),field:'rec'},
     {name:'Drive link',state:stageState(upDone,recDone&&!upDone),field:'drive'},
     {name:'Edición',state:stageState(editDone,upDone&&!editDone),field:'edit'},
     {name:'Entrega',state:stageState(delivDone,editDone&&!delivDone),field:'deliv'},
@@ -834,11 +952,49 @@ function render(){
       const pills=stages.map(s=>`<span class="stage-pill ${s.state}">${s.name}</span>`).join(`<span class="stage-sep">›</span>`);
       const pipeHTML=stages.map(s=>{
         let inner='';
-        if(s.field==='copy'){inner=`<label class="pipe-check"><input type="checkbox" ${v.copyOk?'checked':''} onchange="update(${v.id},'copyOk',this.checked)"> Aprobado</label>`;}
-        else if(s.field==='drive'){inner=`<input class="pipe-input" placeholder="Pegar enlace Drive..." value="${v.driveLink||''}" onchange="update(${v.id},'driveLink',this.value)">`;}
-        else if(s.field==='edit'){inner=`<input class="pipe-input" placeholder="Nombre del editor..." value="${v.editor||''}" onchange="update(${v.id},'editor',this.value)">`;}
-        else if(s.field==='deliv'){inner=`<input class="pipe-input" type="date" value="${v.deliveryDate?toInputDate(v.deliveryDate):''}" onchange="update(${v.id},'deliveryDate',toDisplayDate(this.value))">`;}
-        else{inner=`<span class="pipe-val">${s.state==='done'?'Listo':'Depende del copy'}</span>`;}
+        if(s.field==='copy'){
+          inner=`<label class="pipe-check"><input type="checkbox" ${v.copyOk?'checked':''} onchange="update(${v.id},'copyOk',this.checked)"> Aprobado</label>
+          <div class="stage-assignee">
+            <span class="assignee-label">Responsable:</span>
+            <input class="assignee-input" placeholder="Asignar miembro..." value="${v.assignees?.copy||''}" onchange="updateAssignee(${v.id},'copy',this.value)">
+          </div>`;
+        }
+        else if(s.field==='rec'){
+          inner=`<label class="pipe-check"><input type="checkbox" ${v.recordingOk?'checked':''} onchange="update(${v.id},'recordingOk',this.checked)"> Listo</label>
+          <div class="stage-assignee">
+            <span class="assignee-label">Responsable:</span>
+            <input class="assignee-input" placeholder="Asignar miembro..." value="${v.assignees?.recording||''}" onchange="updateAssignee(${v.id},'recording',this.value)">
+          </div>`;
+        }
+        else if(s.field==='drive'){
+          inner=`<div class="drive-input-wrapper">
+            <input class="pipe-input" placeholder="Pegar enlace Drive..." value="${v.driveLink||''}" onchange="update(${v.id},'driveLink',this.value)">
+            <button class="link-btn" onclick="openDriveLink('${v.driveLink||''}')" ${!v.driveLink?'disabled':''} title="Abrir enlace Drive">
+              <svg viewBox="0 0 24 24">
+                <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
+              </svg>
+            </button>
+          </div>
+          <div class="stage-assignee">
+            <span class="assignee-label">Responsable:</span>
+            <input class="assignee-input" placeholder="Asignar miembro..." value="${v.assignees?.drive||''}" onchange="updateAssignee(${v.id},'drive',this.value)">
+          </div>`;
+        }
+        else if(s.field==='edit'){
+          inner=`<input class="pipe-input" placeholder="Nombre del editor..." value="${v.editor||''}" onchange="update(${v.id},'editor',this.value)">
+          <div class="stage-assignee">
+            <span class="assignee-label">Responsable:</span>
+            <input class="assignee-input" placeholder="Asignar miembro..." value="${v.assignees?.edit||''}" onchange="updateAssignee(${v.id},'edit',this.value)">
+          </div>`;
+        }
+        else if(s.field==='deliv'){
+          inner=`<input class="pipe-input" type="date" value="${v.deliveryDate?toInputDate(v.deliveryDate):''}" onchange="update(${v.id},'deliveryDate',toDisplayDate(this.value))">
+          <div class="stage-assignee">
+            <span class="assignee-label">Responsable:</span>
+            <input class="assignee-input" placeholder="Asignar miembro..." value="${v.assignees?.delivery||''}" onchange="updateAssignee(${v.id},'delivery',this.value)">
+          </div>`;
+        }
+        else{inner=`<span class="pipe-val">${s.state==='done'?'Listo':'Pendiente'}</span>`;}
         return`<div class="pipe-stage ${s.state}"><div class="pipe-name">${s.name}</div>${inner}</div>`;
       }).join('');
       html+=`<div class="video-row${v.expanded?' expanded':''}" id="row-${v.id}">
@@ -877,6 +1033,14 @@ function update(id,field,val){
   const v=videos.find(x=>x.id===id);
   if(v){v[field]=val; render();}
 }
+function updateAssignee(id,stage,val){
+  const v=videos.find(x=>x.id===id);
+  if(v){
+    if(!v.assignees) v.assignees={};
+    v.assignees[stage]=val;
+    render();
+  }
+}
 function deleteVideo(id,e){
   e.stopPropagation();
   videos=videos.filter(x=>x.id!==id);
@@ -888,7 +1052,7 @@ function addVideo(){
   const t=document.getElementById('new-title').value.trim();
   const g=document.getElementById('new-group').value.trim()||'General';
   if(!t) return;
-  videos.push({id:nextId++,title:t,group:g,copyOk:false,driveLink:'',editor:'',deliveryDate:'',expanded:false});
+  videos.push({id:nextId++,title:t,group:g,copyOk:false,recordingOk:false,driveLink:'',editor:'',deliveryDate:'',expanded:false,assignees:{}});
   closeModal();render();
 }
 function toInputDate(d){
@@ -902,6 +1066,16 @@ function toDisplayDate(d){
   const p=d.split('-');
   if(p.length===3) return`${p[2]}/${p[1]}/${p[0]}`;
   return d;
+}
+function openDriveLink(url){
+  if(!url) return;
+  // Validar que sea una URL válida
+  if(url.startsWith('http')){
+    window.open(url, '_blank');
+  } else {
+    // Si no tiene protocolo, agregar https://
+    window.open('https://' + url, '_blank');
+  }
 }
 render();
 </script>
