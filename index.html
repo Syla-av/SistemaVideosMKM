@@ -322,7 +322,7 @@ body {
 
 .stage-pill.active {
   background: var(--info-gradient);
-  color: var(--bg-primary);
+  color: white;
   border-color: #8E9EAB;
   box-shadow: 0 2px 8px rgba(142, 158, 171, 0.3);
 }
@@ -499,7 +499,7 @@ body {
 }
 
 .pipe-stage.active .pipe-name {
-  color: var(--bg-primary);
+  color: white;
 }
 
 .pipe-input {
@@ -628,7 +628,7 @@ body {
 }
 
 .pipe-stage.done .assignee-name {
-  color: #13B497;
+  color: white;
 }
 
 .pipe-stage.active .stage-assignee {
@@ -637,7 +637,7 @@ body {
 }
 
 .pipe-stage.active .assignee-name {
-  color: #8E9EAB;
+  color: white;
 }
 
 .copy-text-btn {
@@ -991,7 +991,7 @@ body {
 <div class="copy-modal-bg" id="copy-modal">
   <div class="copy-modal">
     <h3>Texto del Copy</h3>
-    <textarea class="copy-textarea" id="copy-textarea" placeholder="Escribe aquí el texto del copy, guion, o información importante del video..."></textarea>
+    <textarea class="copy-textarea" id="copy-textarea" placeholder="Escribe aquí el texto del copy, guion, o información importante del video..." oninput="updateCopyButton()"></textarea>
     <div class="copy-modal-actions">
       <button class="btn-cancel" onclick="closeCopyModal()">Cancelar</button>
       <button class="btn-add" onclick="saveCopyText()">Guardar</button>
