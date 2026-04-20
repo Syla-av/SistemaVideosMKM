@@ -1,4 +1,9 @@
-
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel de Producción de Video</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -360,7 +365,7 @@ body {
   box-shadow: 0 2px 8px rgba(142, 158, 171, 0.3);
 }
 
-.status-subido {
+.status-con_link {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
@@ -873,11 +878,103 @@ body {
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
+/* Estilos específicos para input de fecha */
+input[type="date"] {
+  color-scheme: dark; /* Forzar modo oscuro para el calendario */
+}
+
+/* Estilo para el icono del calendario en navegadores WebKit (Chrome, Safari, Edge) */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  background: transparent;
+  bottom: 0;
+  color: white;
+  cursor: pointer;
+  height: auto;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: auto;
+  filter: invert(1) brightness(2); /* Hacer el icono blanco */
+}
+
+/* Estilo para el icono del calendario en Firefox */
+input[type="date"]::-moz-calendar-picker-indicator {
+  background: transparent;
+  bottom: 0;
+  color: white;
+  cursor: pointer;
+  height: auto;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: auto;
+  filter: invert(1) brightness(2); /* Hacer el icono blanco */
+}
+
+/* Prevenir que el calendario interfiera con otros elementos */
+.modal {
+  position: relative;
+  z-index: 1001;
+}
+
 .modal-actions {
+  position: relative;
+  z-index: 1002;
+  margin-top: 2rem;
+  justify-content: flex-end;
   display: flex;
   gap: 0.75rem;
-  justify-content: flex-end;
-  margin-top: 1.5rem;
+}
+
+
+/* Estilos para el botón del calendario personalizado */
+.calendar-btn {
+  background: var(--primary-gradient);
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+}
+
+/* Posicionar el calendario arriba del botón */
+#new-delivery-date-hidden {
+  position: absolute;
+  z-index: 1003;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Asegurar que el modal tenga posición relativa para el calendario */
+.modal {
+  position: relative;
+  z-index: 1001;
+  overflow: visible;
+}
+
+.calendar-btn:hover {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-md);
+}
+
+.calendar-btn:active {
+  transform: scale(0.95);
+}
+
+.calendar-btn svg {
+  transition: transform 0.3s ease;
 }
 
 .btn-cancel {
@@ -952,7 +1049,8 @@ body {
   }
 }
 </style>
-
+</head>
+<body>
 <div class="app">
 <h2 class="sr-only">Panel de gestión de producción de video con estados reactivos por etapa</h2>
 
@@ -973,13 +1071,23 @@ body {
 
 <div id="groups"></div>
 
-<div class="modal-bg" id="modal">
-  <div class="modal">
+<div class="modal-bg" id="modal" onclick="closeModal()">
+  <div class="modal" onclick="event.stopPropagation()">
     <h2>Nuevo video</h2>
     <label>Título del video</label>
     <input id="new-title" placeholder="Ej: Video tutorial #1" />
     <label>Grupo / proyecto</label>
     <input id="new-group" placeholder="Ej: MKM, Pauta, Orgánico..." />
+    <label>Fecha de entrega (opcional)</label>
+    <div style="display: flex; gap: 0.5rem; align-items: center;">
+      <input id="new-delivery-date" type="text" placeholder="Selecciona una fecha..." readonly onclick="event.stopPropagation()" style="flex: 1;" />
+      <button type="button" class="calendar-btn" onclick="openDatePicker(event)" title="Seleccionar fecha">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+          <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+        </svg>
+      </button>
+    </div>
+    <input id="new-delivery-date-hidden" type="date" style="display: none;" />
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
       <button class="btn-add" onclick="addVideo()">Agregar</button>
@@ -988,8 +1096,8 @@ body {
 </div>
 </div>
 
-<div class="copy-modal-bg" id="copy-modal">
-  <div class="copy-modal">
+<div class="copy-modal-bg" id="copy-modal" onclick="closeCopyModal()">
+  <div class="copy-modal" onclick="event.stopPropagation()">
     <h3>Texto del Copy</h3>
     <textarea class="copy-textarea" id="copy-textarea" placeholder="Escribe aquí el texto del copy, guion, o información importante del video..." oninput="updateCopyButton()"></textarea>
     <div class="copy-modal-actions">
@@ -999,43 +1107,162 @@ body {
   </div>
 </div>
 
+<script type="module">
+// Importar Supabase como módulo ES6
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+// Configuración de Supabase
+const supabaseUrl = 'https://emvvssrbuuralgooajpb.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVtdnZzc3JidXVyYWxnb29hanBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0NDE1ODYsImV4cCI6MjA5MjAxNzU4Nn0.7jHzzuoJqx6CoQouyhVNQPhZ-9HqBhF50gq7fOvnEq0';
+
+// Crear cliente de Supabase
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Hacer supabase disponible globalmente para otras funciones
+window.supabase = supabase;
+
+</script>
 <script>
-let videos = [
-  {id:1,title:'Video 1',group:'MKM',copyOk:true,recordingOk:true,driveLink:'https://drive.google.com/file/x',editLink:'https://drive.google.com/file/editado-x',deliveryOk:true,deliveryDate:'20/04/2026',expanded:false,copyText:'Este es el texto del copy para el Video 1. Contiene el guion y los puntos clave del contenido.'},
-  {id:2,title:'Video 2',group:'MKM',copyOk:false,recordingOk:false,driveLink:'',editLink:'',deliveryOk:false,deliveryDate:'',expanded:false,copyText:''},
-  {id:3,title:'Video 3',group:'MKM',copyOk:true,recordingOk:false,driveLink:'https://drive.google.com/file/y',editLink:'',deliveryOk:false,deliveryDate:'22/04/2026',expanded:false,copyText:'Copy del Video 3 con información importante sobre el tema a tratar.'},
-  {id:4,title:'Video 4',group:'MKM',copyOk:false,recordingOk:true,driveLink:'',editLink:'',deliveryOk:false,deliveryDate:'',expanded:false,copyText:''},
-  {id:5,title:'Video 1',group:'Pauta',copyOk:true,recordingOk:true,driveLink:'https://drive.google.com/file/z',editLink:'',deliveryOk:false,deliveryDate:'',expanded:false,copyText:'Texto copy para el Video 1 de Pauta. Detalles del contenido y objetivos.'},
-  {id:6,title:'Video 2',group:'Pauta',copyOk:false,recordingOk:false,driveLink:'',editLink:'',deliveryOk:false,deliveryDate:'',expanded:false,copyText:''},
-  {id:7,title:'Video 3',group:'Pauta',copyOk:true,recordingOk:true,driveLink:'https://drive.google.com/file/w',editLink:'https://drive.google.com/file/editado-w',deliveryOk:false,deliveryDate:'',expanded:false,copyText:'Copy del Video 3 de Pauta con toda la información necesaria.'},
-  {id:8,title:'Video 4',group:'Pauta',copyOk:false,recordingOk:false,driveLink:'',editLink:'',deliveryOk:false,deliveryDate:'',expanded:false,copyText:''},
-];
+// Variables globales
+let videos = [];
 let currentCopyVideoId = null;
-let nextId=9;
+
+// Funciones del modal (definidas temprano para evitar errores de referencia)
+function openModal(){document.getElementById('modal').classList.add('show');}
+function closeModal(){
+  document.getElementById('modal').classList.remove('show');
+  document.getElementById('new-title').value='';
+  document.getElementById('new-group').value='';
+  document.getElementById('new-delivery-date').value='';
+  document.getElementById('new-delivery-date-hidden').value='';
+}
+
+// Función para abrir el selector de fecha
+function openDatePicker(e){
+  const hiddenInput = document.getElementById('new-delivery-date-hidden');
+  const textInput = document.getElementById('new-delivery-date');
+  const button = e.target.closest('.calendar-btn');
+  
+  // Prevenir que el evento se propague
+  e.stopPropagation();
+  
+  // Posicionar el input oculto donde está el botón
+  const rect = button.getBoundingClientRect();
+  hiddenInput.style.left = rect.left + 'px';
+  hiddenInput.style.top = rect.top + 'px';
+  hiddenInput.style.width = rect.width + 'px';
+  hiddenInput.style.height = rect.height + 'px';
+  hiddenInput.style.opacity = '1';
+  hiddenInput.style.pointerEvents = 'auto';
+  
+  // Usar showPicker() si está disponible, sino focus() como fallback
+  setTimeout(() => {
+    if (hiddenInput.showPicker) {
+      hiddenInput.showPicker();
+    } else {
+      hiddenInput.focus();
+    }
+  }, 10);
+}
+
+// Cargar videos desde Supabase al iniciar
+async function loadVideos() {
+  console.log('Iniciando carga de videos...');
+  try {
+    console.log('Conectando a Supabase...');
+    const { data, error } = await window.supabase
+      .from('videos')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    console.log('Respuesta de Supabase:', { data, error });
+    
+    if (error) {
+      console.error('Error de Supabase:', error);
+      throw error;
+    }
+    
+    videos = data || [];
+    console.log('Videos cargados:', videos.length, videos);
+    
+    // Forzar render después de cargar
+    if (videos.length > 0) {
+      render();
+    }
+  } catch (error) {
+    console.error('Error cargando videos:', error);
+    // Si hay error, mantener videos vacíos
+    videos = [];
+    // Mostrar mensaje al usuario
+    alert('Error al cargar videos. Verifica tu conexión a internet.');
+  }
+}
+
+// Guardar video en Supabase
+async function saveVideoToSupabase(video) {
+  try {
+    const { data, error } = await window.supabase
+      .from('videos')
+      .upsert(video)
+      .select();
+    
+    if (error) {
+      console.error('Error de Supabase:', error);
+      throw error;
+    }
+    
+    // Validar que tengamos datos de respuesta
+    if (!data || data.length === 0) {
+      throw new Error('No se recibieron datos de Supabase');
+    }
+    
+    console.log('Video guardado exitosamente:', data[0]);
+    return data;
+  } catch (error) {
+    console.error('Error guardando video:', error.message);
+    return null;
+  }
+}
+
+// Eliminar video de Supabase
+async function deleteVideoFromSupabase(videoId) {
+  try {
+    const { error } = await window.supabase
+      .from('videos')
+      .delete()
+      .eq('id', videoId);
+    
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('Error eliminando video:', error);
+    return false;
+  }
+}
 
 function getStatus(v){
-  if(v.deliveryOk&&v.driveLink&&v.editLink) return 'entregado';
-  if(v.editLink) return 'edicion';
-  if(v.driveLink) return 'subido';
+  if(v.delivery_ok&&v.drive_link&&v.edit_link) return 'entregado';
+  if(v.edit_link) return 'edicion';
+  if(v.drive_link) return 'con_link';
   return 'pendiente';
 }
 function getStatusLabel(s){
-  return{entregado:'Entregado',edicion:'En edición',subido:'Subido',grabacion:'Grabación',pendiente:'Pendiente'}[s];
+  return{entregado:'Entregado',edicion:'En edición',con_link:'Con link',grabacion:'Grabación',pendiente:'Pendiente'}[s];
 }
 function getProgress(v){
   let s=getStatus(v);
-  return{entregado:100,edicion:75,subido:55,grabacion:35,pendiente:10}[s];
+  return{entregado:100,edicion:75,con_link:55,grabacion:35,pendiente:10}[s];
 }
 function stageState(done,active){
   if(done) return 'done'; if(active) return 'active'; return 'pending';
 }
 function getPipeStages(v){
   let st=getStatus(v);
-  let copyDone=v.copyOk;
-  let recDone=v.recordingOk;
-  let upDone=!!v.driveLink;
-  let editDone=!!v.editLink;
-  let delivDone=v.deliveryOk;
+  let copyDone=v.copy_ok;
+  let recDone=v.recording_ok;
+  let upDone=!!v.drive_link;
+  let editDone=!!v.edit_link;
+  let delivDone=v.delivery_ok;
   return[
     {name:'Copy',state:stageState(copyDone,!copyDone),field:'copy'},
     {name:'Grabación',state:stageState(recDone,copyDone&&!recDone),field:'rec'},
@@ -1048,8 +1275,8 @@ function getPipeStages(v){
 function render(){
   const groups={};
   videos.forEach(v=>{
-    if(!groups[v.group]) groups[v.group]=[];
-    groups[v.group].push(v);
+    if(!groups[v.group_name]) groups[v.group_name]=[];
+    groups[v.group_name].push(v);
   });
   let html='';
   Object.entries(groups).forEach(([g,vids])=>{
@@ -1058,12 +1285,12 @@ function render(){
       const st=getStatus(v);
       const prog=getProgress(v);
       const stages=getPipeStages(v);
-      const pills=stages.map(s=>`<span class="stage-pill ${s.state}">${s.name}</span>`).join(`<span class="stage-sep">›</span>`);
+      const pills=stages.map(s=>`<span class="stage-pill ${s.state}">${s.name}</span>`).join(`<span class="stage-sep">></span>`);
       const pipeHTML=stages.map(s=>{
         let inner='';
         if(s.field==='copy'){
           inner=`<div class="copy-text-wrapper">
-            <label class="pipe-check"><input type="checkbox" ${v.copyOk?'checked':''} onchange="update(${v.id},'copyOk',this.checked)"> Aprobado</label>
+            <label class="pipe-check"><input type="checkbox" ${v.copy_ok?'checked':''} onchange="update(${v.id},'copy_ok',this.checked)"> Aprobado</label>
             <button class="copy-text-btn" onclick="openCopyModal(${v.id})" title="Agregar texto del copy">
               <svg viewBox="0 0 24 24">
                 <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M10,19L12,15H9V10H15V15L13,19H10Z"/>
@@ -1072,12 +1299,12 @@ function render(){
           </div>`;
         }
         else if(s.field==='rec'){
-          inner=`<label class="pipe-check"><input type="checkbox" ${v.recordingOk?'checked':''} ${!v.copyOk?'disabled':''} onchange="update(${v.id},'recordingOk',this.checked)"> Listo</label>`;
+          inner=`<label class="pipe-check"><input type="checkbox" ${v.recording_ok?'checked':''} ${!v.copy_ok?'disabled':''} onchange="update(${v.id},'recording_ok',this.checked)"> Listo</label>`;
         }
         else if(s.field==='drive'){
           inner=`<div class="drive-input-wrapper">
-            <input class="pipe-input" placeholder="Pegar enlace Drive..." value="${v.driveLink||''}" onchange="update(${v.id},'driveLink',this.value)">
-            <button class="link-btn" onclick="openDriveLink('${v.driveLink||''}')" ${!v.driveLink?'disabled':''} title="Abrir enlace Drive">
+            <input class="pipe-input" placeholder="Pegar enlace Drive..." value="${v.drive_link||''}" onchange="update(${v.id},'drive_link',this.value)">
+            <button class="link-btn" onclick="openDriveLink('${v.drive_link||''}')" ${!v.drive_link?'disabled':''} title="Abrir enlace Drive">
               <svg viewBox="0 0 24 24">
                 <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
               </svg>
@@ -1086,8 +1313,8 @@ function render(){
         }
         else if(s.field==='edit'){
           inner=`<div class="drive-input-wrapper">
-            <input class="pipe-input" placeholder="Pegar enlace del video editado..." value="${v.editLink||''}" onchange="update(${v.id},'editLink',this.value)">
-            <button class="link-btn" onclick="openDriveLink('${v.editLink||''}')" ${!v.editLink?'disabled':''} title="Abrir video editado">
+            <input class="pipe-input" placeholder="Pegar enlace del video editado..." value="${v.edit_link||''}" onchange="update(${v.id},'edit_link',this.value)">
+            <button class="link-btn" onclick="openDriveLink('${v.edit_link||''}')" ${!v.edit_link?'disabled':''} title="Abrir video editado">
               <svg viewBox="0 0 24 24">
                 <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
               </svg>
@@ -1096,8 +1323,8 @@ function render(){
         }
         else if(s.field==='deliv'){
           inner=`<div style="display:flex;flex-direction:column;gap:0.5rem">
-            <label class="pipe-check"><input type="checkbox" ${v.deliveryOk?'checked':''} onchange="update(${v.id},'deliveryOk',this.checked)"> Listo</label>
-            <input class="pipe-input" type="date" value="${v.deliveryDate?toInputDate(v.deliveryDate):''}" onchange="update(${v.id},'deliveryDate',toDisplayDate(this.value))">
+            <label class="pipe-check"><input type="checkbox" ${v.delivery_ok?'checked':''} onchange="update(${v.id},'delivery_ok',this.checked)"> Listo</label>
+            <input class="pipe-input" type="date" value="${v.delivery_date?toInputDate(v.delivery_date):''}" onchange="update(${v.id},'delivery_date',toDisplayDate(this.value))">
           </div>`;
         }
         else{inner=`<span class="pipe-val">${s.state==='done'?'Listo':'Pendiente'}</span>`;}
@@ -1122,7 +1349,7 @@ function render(){
   document.getElementById('groups').innerHTML=html;
   const total=videos.length;
   const done=videos.filter(v=>getStatus(v)==='entregado').length;
-  const active=videos.filter(v=>['edicion','subido','grabacion'].includes(getStatus(v))).length;
+  const active=videos.filter(v=>['edicion','con_link','grabacion'].includes(getStatus(v))).length;
   const pend=videos.filter(v=>getStatus(v)==='pendiente').length;
   document.getElementById('st-total').textContent=total;
   document.getElementById('st-done').textContent=done;
@@ -1135,41 +1362,105 @@ function toggle(id){
   if(v) v.expanded=!v.expanded;
   render();
 }
-function update(id,field,val){
+async function update(id,field,val){
   const v=videos.find(x=>x.id===id);
   if(v){
     v[field]=val;
     // Si se aprueba el copy, desmarcar automáticamente la grabación
-    if(field==='copyOk' && val===true){
-      v.recordingOk = false;
+    if(field==='copy_ok' && val===true){
+      v.recording_ok = false;
     }
+    
+    // Guardar en Supabase
+    await saveVideoToSupabase(v);
     render();
   }
 }
-function deleteVideo(id,e){
+async function deleteVideo(id,e){
   e.stopPropagation();
-  videos=videos.filter(x=>x.id!==id);
-  render();
+  
+  // Eliminar de Supabase
+  const success = await deleteVideoFromSupabase(id);
+  if (success) {
+    videos=videos.filter(x=>x.id!==id);
+    render();
+  } else {
+    alert('Error al eliminar el video');
+  }
 }
-function openModal(){document.getElementById('modal').classList.add('show');}
-function closeModal(){document.getElementById('modal').classList.remove('show');document.getElementById('new-title').value='';document.getElementById('new-group').value='';}
-function addVideo(){
+async function addVideo(){
   const t=document.getElementById('new-title').value.trim();
   const g=document.getElementById('new-group').value.trim()||'General';
-  if(!t) return;
-  videos.push({id:nextId++,title:t,group:g,copyOk:false,recordingOk:false,driveLink:'',editLink:'',deliveryOk:false,deliveryDate:'',expanded:false,copyText:''});
-  closeModal();render();
+  const deliveryDateInput = document.getElementById('new-delivery-date-hidden').value;
+  
+  console.log('Datos del nuevo video:', { title: t, group: g, deliveryDateInput });
+  
+  // Solo validar el título
+  if(!t){
+    alert('El título del video es obligatorio');
+    return;
+  }
+  
+  // Obtener botón y mostrar estado de carga
+  const addBtn = document.querySelector('.btn-add');
+  const originalText = addBtn.textContent;
+  addBtn.textContent = 'Guardando...';
+  addBtn.disabled = true;
+  
+  const deliveryDateFormatted = deliveryDateInput ? toDisplayDate(deliveryDateInput) : '';
+  console.log('Fecha formateada:', { deliveryDateInput, deliveryDateFormatted });
+  
+  const newVideo = {
+    title: t,
+    group_name: g,
+    copy_ok: false,
+    recording_ok: false,
+    drive_link: '',
+    edit_link: '',
+    delivery_ok: false,
+    delivery_date: deliveryDateFormatted,
+    expanded: false,
+    copy_text: '',
+    created_at: new Date().toISOString()
+  };
+  
+  console.log('Objeto a guardar:', newVideo);
+  
+  try {
+    // Guardar en Supabase
+    const savedVideo = await saveVideoToSupabase(newVideo);
+    if (savedVideo && savedVideo.length > 0) {
+      videos.push(savedVideo[0]);
+      closeModal();
+      render();
+    } else {
+      alert('Error al agregar el video. Por favor, verifica tu conexión e intenta nuevamente.');
+    }
+  } catch (error) {
+    console.error('Error inesperado:', error);
+    alert('Ocurrió un error inesperado. Intenta nuevamente.');
+  } finally {
+    // Restaurar botón
+    addBtn.textContent = originalText;
+    addBtn.disabled = false;
+  }
 }
 function toInputDate(d){
   if(!d) return '';
+  // Si ya está en formato YYYY-MM-DD, retornarlo directamente
+  if(d.includes('-')) return d;
+  // Convertir de YYYY/MM/DD a YYYY-MM-DD
   const p=d.split('/');
-  if(p.length===3) return`${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
+  if(p.length===3) return`${p[0]}-${p[1].padStart(2,'0')}-${p[2].padStart(2,'0')}`;
   return d;
 }
 function toDisplayDate(d){
   if(!d) return '';
+  // Si ya está en formato YYYY/MM/DD, retornarlo directamente
+  if(d.includes('/') && d.split('/')[0].length === 4) return d;
+  // Convertir de YYYY-MM-DD a YYYY/MM/DD
   const p=d.split('-');
-  if(p.length===3) return`${p[2]}/${p[1]}/${p[0]}`;
+  if(p.length===3) return`${p[0]}/${p[1]}/${p[2]}`;
   return d;
 }
 function openDriveLink(url){
@@ -1187,11 +1478,11 @@ function openCopyModal(videoId){
   const v = videos.find(x=>x.id===videoId);
   if(v){
     const textarea = document.getElementById('copy-textarea');
-    textarea.value = v.copyText || '';
+    textarea.value = v.copy_text || '';
     // Guardar el texto original para detectar cambios
-    textarea.dataset.originalText = v.copyText || '';
+    textarea.dataset.originalText = v.copy_text || '';
     const saveBtn = document.querySelector('#copy-modal .btn-add');
-    const hasText = v.copyText && v.copyText.trim() !== '';
+    const hasText = v.copy_text && v.copy_text.trim() !== '';
     saveBtn.textContent = hasText ? 'Editar' : 'Guardar';
     saveBtn.dataset.originalText = saveBtn.textContent; // Guardar estado original
     
@@ -1213,18 +1504,22 @@ function closeCopyModal(){
   document.getElementById('copy-modal').classList.remove('show');
   currentCopyVideoId = null;
 }
-function saveCopyText(){
+async function saveCopyText(){
   if(currentCopyVideoId){
     const v = videos.find(x=>x.id===currentCopyVideoId);
     if(v){
       const textarea = document.getElementById('copy-textarea');
-      v.copyText = textarea.value;
+      v.copy_text = textarea.value;
       // Actualizar el texto original después de guardar
       textarea.dataset.originalText = textarea.value;
+      
+      // Guardar en Supabase
+      await saveVideoToSupabase(v);
       render();
+      
       // Actualizar el botón después de guardar exitosamente
       const saveBtn = document.querySelector('#copy-modal .btn-add');
-      const hasText = v.copyText && v.copyText.trim() !== '';
+      const hasText = v.copy_text && v.copy_text.trim() !== '';
       saveBtn.textContent = hasText ? 'Editar' : 'Guardar';
       saveBtn.dataset.originalText = saveBtn.textContent;
       
@@ -1275,5 +1570,25 @@ function updateCopyButton(){
     }
   }
 }
-render();
+// Configurar listener para el input de fecha (se ejecuta una sola vez)
+document.addEventListener('DOMContentLoaded', () => {
+  const hiddenInput = document.getElementById('new-delivery-date-hidden');
+  const textInput = document.getElementById('new-delivery-date');
+  
+  // Listener para actualizar el input visible cuando cambia el input oculto
+  hiddenInput.addEventListener('change', function() {
+    if (this.value) {
+      const formattedDate = toDisplayDate(this.value);
+      textInput.value = formattedDate;
+    } else {
+      textInput.value = '';
+    }
+  });
+  
+  // Iniciar la aplicación
+  loadVideos();
+  render();
+});
 </script>
+</body>
+</html>
